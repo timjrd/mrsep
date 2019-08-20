@@ -1,0 +1,13 @@
+{
+	"n_targets": 903,
+	"n_bootstraps": 100,
+	"n_processed": 30500,
+	"n_pseudoaligned": 27685,
+	"n_unique": 118,
+	"p_pseudoaligned": 90.8,
+	"p_unique": 0.4,
+	"kallisto_version": "0.44.0",
+	"index_version": 10,
+	"start_time": "Thu Jun  6 05:56:53 2019",
+	"call": "kallisto quant -i data/ST150.idx -t 8 -o results/run2_3_kallisto_HS20 -b 100 results/run2_3_HS20_1.fq results/run2_3_HS20_2.fq"
+}

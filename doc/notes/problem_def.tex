@@ -1,0 +1,365 @@
+\documentclass[10pt]{llncs}
+%\documentclass{endm}
+
+%\usepackage{endmmacro}
+\usepackage{graphicx}
+
+\usepackage{wrapfig}
+
+%\usepackage{t1enc}
+
+%\usepackage{algo}  
+%\usepackage[a4paper]{geometry}   
+\usepackage{a4wide}  
+%\usepackage{epsfig}  
+\usepackage{url}  
+\usepackage[utf8]{inputenc}  
+\usepackage{latexsym}  
+\usepackage{amsmath} 
+\usepackage{amssymb} 
+\usepackage{setspace} 
+\usepackage[]{algorithm2e}
+%\usepackage{boxedminipage}  
+\urlstyle{tt}  
+%\usepackage[left]{lineno}
+%\usepackage[tight,FIGTOPCAP]{subfigure}
+%\usepackage{subfigure}
+\usepackage{subfig}
+\usepackage{todonotes}
+
+% \newtheorem{definition}{Definition}  
+% \newtheorem{proposition}{Proposition}  
+% \newtheorem{prop}{Property}  
+% \newtheorem{lemma}{Lemma}  
+\newtheorem{cor}{Corollary}  
+% \newtheorem{corollary}{Corollary}  
+% \newtheorem{example}{Example}  
+\newtheorem{invariant}{Invariant}  
+% \newtheorem{property}{Property}  
+ 
+\newcommand{\pr}{\textrm{pref}}
+\newcommand{\ov}{\textrm{ov}}
+\newcommand{\pe}{\textrm{period}}
+\newcommand{\cn}{\textrm{\it sp}}
+
+\newcommand{\opt}{\mbox{\it OPT}}
+\newcommand{\opts}{\mbox{\it OPT}_{\sigma}}
+\newcommand{\be}{\beta}
+
+
+% \newtheorem{theo}{Theorem}  
+% \newtheorem{theorem}{Theorem}  
+% \newtheorem{conj}{Conjecture}  
+% \newenvironment{proof}{\noindent {\it Proof.}}{$\Box$\vskip1ex}  
+
+\newenvironment{preuve}{\noindent {\it Proof.}}{$\Box$\vskip1ex}  
+\newenvironment{preuveA1}{\noindent {\it Proof of conservation of   
+Property $A_1$.}}{$\Box$\vskip1ex}  
+ \newenvironment{preuveA2}{\noindent {\it Proof of conservation of   
+Property $A_2$.}}{$\Box$\vskip1ex}  
+\newenvironment{preuveB}{\noindent {\it Proof of the invariants.}}  
+{$\Box$\vskip1ex}  
+\newenvironment{OJO}{\noindent {\bf OJO:}}{$\Box$\vskip1ex}  
+  
+ 
+\newcommand{\Nat}{{\mathbb N}}
+\newcommand{\Real}{{\mathbb R}}
+\def\lastname{Habib}
+\graphicspath{{figures/}}
+
+%% pour que les cadre algorithm respectent les regles de largeur de marge
+%% trouvé à : http://tex.stackexchange.com/questions/115086/algorithm2e-with-boxruled-gives-overfull-hbox
+\makeatletter
+\renewcommand{\algocf@caption@boxruled}{%
+  \hrule
+  \hbox to \hsize{%
+    \vrule\hskip-0.4pt
+    \vbox{   
+       \vskip\interspacetitleboxruled%
+       \unhbox\algocf@capbox\hfill
+       \vskip\interspacetitleboxruled
+       }%
+     \hskip-0.4pt\vrule%
+   }\nointerlineskip%
+}%
+\makeatother
+
+%------------------------------------------------------------------------------------
+\begin{document}
+%\linenumbers
+
+\title{Understanding the Diversity in Pathogens using NGS Data}
+
+\author{Cedric Chauve\inst{1,2,3} \and Mathieu Raffinot\inst{4} \and Raluca Uricaru\inst{2} \and Cyril Gavoille\inst{2} \and Guillaume Blin\inst{2}}
+
+\institute{Department of Mathematics, Simon Fraser University, Burnaby (BC), Canada 
+	\and LaBRI, Universit\'e de Bordeaux, Talence, France 
+	\and LIX, Ecole Polytechnique, Palaiseau, France
+    \and CNRS and LaBRI, Universit\'e de Bordeaux, Talence, France 
+}
+
+\maketitle
+
+%------------------------------------------------------------------------------------
+\begin{abstract}
+We revisit the problem of determining the strain composition of a pathogen sample.
+\end{abstract}
+
+%------------------------------------------------------------------------------------
+\section{Introduction}
+\label{sec:intro}
+
+We consider the following generic problem: we have an NGS data set, taken for example from a patient. The patient is infected by one or several strains of a given pathogens; the NGS data correspond to reads from all these strains. The strain content and abundance ratios for the present strains are unknown, and this is what we want to find out.
+
+A strain type is defined by its allelic composition, in terms of a \textit{Multi-Locus Sequence Typing} (MLST) scheme, composed of a fixed set of loci/genes. So if we have an MLST scheme with $K$ loci, a strain type (ST) is a vector of $K$ alleles, one per locus. In practice, $K$ can go from $8$ (traditional MLST schemes based on housekeeping genes) to a few thousands (whole-genome MLST schemes, wgMLST).
+
+We assume we have a database of known STs, which also implies a database of alleles for each locus of the MLST scheme. W.l.o.g. we can also assume that we have a Multiple Sequence Alignement (MSA) of the known alleles per locus; MSA is chosen over other representations such as deBruijn graphs (dBG) for example because we assume that the alleles of a locus are highly similar, especially in terms of length. 
+
+%------------------------------------------------------------------------------------
+\section{Problems Definition}
+\label{sec:problem}
+
+We consider an alphabet $\Sigma = \{A,C,G,T,-\}$. Given an MLST scheme and an MSA for each locus, we can look at the variable positions of each MSA. Assuming that loci are labeled from $1$ to $K$, we denote by $k_i$ the number of alleles for locus $i$, by $v_i$ the number of variable positions of the MSA of locus $i$ and by $A_i=\{a_{1,i},\dots,a_{v_i,i}\}$ these variable positions.
+
+It follows that an ST is defined by a sequence of length $L = \sum_{i=1}^K v_i$ over $\Sigma$ and a database of $N$ known STs can be encoded by a $N\times L$ matrix $ST$ over $\Sigma$. We denote by $\cal S$ the set of $N$ STs, equivalently the ST matrix. We denote by $c_1,\dots,c_L$ the columns of the STs matrix $\cal S$.
+
+\begin{example}
+    \label{ex:inputMLST}
+    We have $N=3$ STs, $s_1,s_2,s_3$, each defined over $K=3$ alleles. Assume that allele $1$ has two variable positions, $a_{1,1}$ and $a_{1,2}$, allele $2$ has three variable positions, $a_{2,1},a_{2,2},a_{2,3}$ and allele $3$ has two variable positions $a_{3,1},a_{3,2}$. It follows that $v_1=2, v_2=3, v_3=2$ and $L=2+3+2=7$. The matrix below represents the STs
+    $${\cal S} = 
+    \begin{array}{c||c|c||c|c|c||c|c||}
+    & c_1 & c_2 & c_3 & c_4 & c_5 & c_6 & c_7 \\ \hline
+    s_1 & A & G & T & A & T & T & C \\ \hline
+    s_2 & A & C & T & C & G & A & C \\ \hline
+    s_3 & A & C & C & A & C & C & G \\ \hline
+    \end{array}
+    $$
+    Here we can observe that for locus $1$, we have only two alleles $AG$ and $AC$ (present in STs $s_2$ and $s_3$), while the two other loci have each three alleles. The double vertical lines represent the separation between the three loci. 
+\end{example}
+
+%We call an ST \textit{novel} if it differs from any known strain type; similarly, for a given locus, an allele observed in an ST is novel if it does not appear in the database of known alleles for this locus. 
+
+%The \textit{strain diversity} within a sample can be encoded by a $K$-vector $Q=(q_1,\dots,q_N)$ of real numbers that sums up to $1$: $q_j$ represents the frequency of strain $j$ in the sample. 
+
+The \textit{strain diversity} within a sample can be encoded in two different ways:
+\begin{itemize}
+\item a $K$-vector $Q=(q_1,\dots,q_N)$ of non negative integers where $q_j$ represents the number of copies of ST $s_j$ in the sample, called the abundance vector;
+\item a $K$-vector $P=(p_1,\dots,p_N)$ of real numbers summing to $1$ where $p_j$ represents the frequency of ST $s_j$ in the sample, called the frequency vector.
+\end{itemize}
+For example, if we have an abundance vector $Q=(3,5,2)$, then the corresponding frequency vector is $P=(0.3,0.5,0.2)$.
+
+We assume we are given a set ${\cal R}=\{r_1,\dots,r_R\}$ of $R$ reads, ideally each originating from a strain of the pathogen of interest (otherwise, the reads set is said to be noisy). We also assume that reads have been aligned onto the alleles database, so each read can be associated to an interval $1 \leq i \leq j \leq L$ and a sequence of length $j-i+1$ over $\Sigma$.  
+The \textit{span} of a read is the interval $[i,j]$ and the \textit{span length} is $j-i+1$. 
+The set $\cal R$ can be encoded with an $R \times L$ matrix $\cal R$ over $\Sigma \cup \{0\}$, where ${\cal R}[k,\ell]=0$ indicates that the read $r_k$ did not align onto the variable position corresponding to position $\ell$ of the sequences encoding ST $s_k$. We denote by $m_1,\dots, m_L$ the columns of this matrix.
+
+\begin{example}
+    \label{ex:inputReads}
+    We have eight reads $\{r_1,\dots,r_8\}$. A possible reads mapping matrix could be as below
+    $${\cal R} = 
+    \begin{array}{c||c|c||c|c|c||c|c||}
+    & m_1 & m_2 & m_3 & m_4 & m_5 & m_6 & m_7 \\ \hline
+    r_1 & 0 & G & 0 & 0 & 0 & 0 & 0 \\ \hline
+    r_2 & 0 & 0 & 0 & A & C & 0 & 0 \\ \hline
+    r_3 & C & C & 0 & 0 & 0 & 0 & 0 \\ \hline
+    r_4 & 0 & 0 & T & 0 & 0 & 0 & 0 \\ \hline
+    r_5 & 0 & 0 & 0 & 0 & 0 & C & G \\ \hline
+    r_6 & 0 & 0 & 0 & 0 & 0 & C & C \\ \hline
+    r_7 & 0 & 0 & T & C & 0 & 0 & 0 \\ \hline
+    r_8 & C & 0 & 0 & 0 & 0 & 0 & 0 \\ \hline
+    \end{array}
+    $$
+    This matrix tells us that read $r_1$ aligned to locus $1$ of the MLST scheme, and that in this alignment, the only variable position it covered was the second position where it has nucleotide $G$; so the span of $r_1$ is $[2,2]$. Moreover,  if we compare with the matrix $\cal S$ of Example~\ref{ex:inputMLST}, this tells us that likely this read originates from a copy of ST $s_1$ as this is the only ST that has an allele for locus $1$ with a $G$ in the second position. For read $r_2$, its span is $[4,5]$, corresponding to variable positions $2$ and $3$ of locus $2$ and it is reasonable to assume it originates from ST $s_3$, the only one where variable positions $2$ and $3$ have respectively nucleotides $A$ and $C$. Last, looking at $r_3$, it does not seem to originate from any known ST, as none of the three considered STs has variable positions $1$ and $2$ of locus $1$ having both a $C$; it could be that it originates from a novel ST, i.e. an ST not encoded in $\cal R$ or that there has been a sequencing error that output a $C$ instead of an $A$.
+\end{example}
+
+%A more compact encoding would be to use a $|\sigma| \times L$ matrix $F_R$ such that each column sums up to $1$, that records the frequency of each symbol at every variable position; this encoding loses information if some reads have span length larger than $1$.
+ 
+%Note that under these assumptions, we assume that novel alleles can not be longer than existing alleles. %% a expliquer %%
+%Also not all spans are possible as reads are constrained to align within a locus and can not align partially over several loci. 
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsection{The Maximum Read Subset Explanation Problem (MRSEP)}
+\label{ssec:MRESP}
+
+The first problem one can consider asks informally: under some given hypothesis of sequencing depth of the loci of the MLST scheme, how much can we explain the reads $\cal R$ would originate from a set of known STs represented by $\cal S$. 
+
+\paragraph{The uniform depth hypothesis.} To formalize a first version of the problem, we assume uniform sequencing depth: if we assume that we sequence at depth $d$, then for an ST present in the sample with abundance (copy number) $p$, then  we expect that each variable position of this ST would have been sequenced a total of $p\times d$ times. In that ideal situation, if the total copy numbers of the STs present in the sample is $P$, ($P=\sum_{j=1}^N q_j$) and if all sequenced reads did actually originate from these STs, then we would expect that every column of the matrix $\cal R$ contains exactly $P \times d$. 
+
+The Maximum Read Subset Explanation Problem asks to find a maximum subset ${\cal R}'$ of $\cal R$ (i.e. subset of reads), together with an assignment of each read of ${\cal R}'$ to a given ST, such that for each chosen ST $s_j$ each position of the $L$-sequence defining it is covered by the same number of reads. 
+
+A {\bf read assignment} is a function from a subset of reads to STs where each read can be assigned to at most one ST.
+
+A solution to the Read Subset Explanation Problem is a read assignment such that for each ST all columns (variable positions) are covered exactly the same number of times by the reads assigned to the ST. Note that if a ST is absent from the sample, no read is assigned to it and no column is covered.
+
+A solution is maximum is the number of assigned read is maximum.
+
+\begin{remark}
+    \label{rem:u_fre_vs_ab}
+    With this formulation, one can not find a unique abundance vector from a given solution. For example if all ST have their columns covered by $2$ reads in a solution, then it can be explained by either two copies of each ST (so assuming depth $d=1$) or one copy of each ST (assuming $d=2$). But in all cases one can define a unique frequency vector, which is in general the goal of diversity questions. If one wants to find explicitly an abundance vector, then the depth of coverage $d$ needs to be provided as part of the input and one should assume that for each ST, its columns are covered by a number of reads that form a multiple of $d$.
+\end{remark}
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsection{The Minimum Read Cover Problem (MRCP)}
+\label{ssec:MRCP}
+
+We can introduce a variant of the Maximum Read Subset Explanation Problem that allows to work with a notion of read cover, that was introduced in our work presented at RECOMB-seq 2018~\cite{talk/recombseq/GanWCC18,sfu/Gan18}.
+
+In the new problem, we modify the notion of read assignment, by assuming a read is assigned to a ST with a \textit{weight}, corresponding to the cost of mapping this read onto this allele (for example to the number of mismatches between the read and the allele covering the same variable positions in the chosen ST). A \textit{read cover} is a read assignment that assigns all reads. The cost of a read cover is the sum of the weights corresponding to the assignment of reads to STs. 
+
+A solution to the Read Cover Problem is a read assignment such that for each ST all columns (variable positions) are covered exactly the same number of times by the reads assigned to the ST, and each read is assigned to a ST (no discarded reads). A solution is minimum if its cost is minimum among all solutions, if any. 
+
+The MRCP is slightly different from the MRESP because we do not discard reads, so the uniform coverage hypothesis requires to use all the reads, while in the MRESP, reads could be discarded. As a consequence, with the strict unfirom coverage assumption, there might be no solution if the total number of variable positions covered by all the reads is not a multiple of the number of columns of the matrix. 
+
+In the case where the reads are not assigned weights, i.e. for each read there is a set of alleles it can map to at no cost while it does not map to any other allele, the MRCP becomes a pure decision problem, i.e. the problem to decide if there exists a read assignment, that we call the RCP (Read Cover Problem), that we will show is NP-complete.
+
+% % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+% \subsection{The Uniform Strain Deconvolution Problem (USDP)}
+% \label{ssec:USDP}
+
+% We also introduce a decision problem related to the two problems above. Roughly speaking, the UFRAP assumes that each read maps to a unique variable position and that the same number of reads map to each variable position. So we can see this problem as taking as input the matrix ${\cal S}$ and, for each column $c_i$ of this matrix, a quartet $(A_i,C_i,G_i,T_i)$ that describes for each nucleotide, the number of reads mapping to this position with this nucleotide. Under the assumption that each variable position is covered by the same number of reads, we have that for any columns $c_i$ and $c_j$, $A_i+C_i+G_i+T_i = A_j+C_j+G_j+T_j$; we denote ths value $C$, for coverage. 
+
+% The USDP problem asks to assign to every strain types $s_i$ an abundance $a_i$, i.e. a non-negative integer such that the sum of all abundances is exactly $C$ and, for each column, the abundances given to the strain types is consistent with the nucleotides partition: for a nucleotide $X$, the sum of the abundances of the strain types having nucleotide $X$ in position $j$ is exactly $X_j$.
+
+% The USDP is a simple problem compared to real applications, for two reasons. The first one is the assumption that every read maps to a single variable position. This might be justifiable for very short reads through. The second one is the strict uniformity assumption. Nevertheless, we will see that this problem is NP-complete, thus providing a first hint toward the hardness of the problems we consider in this work.
+
+% At first, it might look that the UDP and the MRCP (in its decision version where the weight assigned to each read is the same, which implies that we ask if we can explain all reads by the existing strain types) are quite different. Indeed in its definition, the USDP does not explicitly consider assigning reads to strain types. However, with the assumption that each read covers a unique variable position, deciding abundances for strain types is equivalent to assigning reads to the strain types, as all reads having a given nucleotide at a given position can arbitrarily be assigned to any of the corresponding strain types. Nevertheless, this points to the fact that the assumption of reads mapping to a unique position, that leads to the irrelevance of the weights and turns the MRCP from an optimization problem to a decision problem, is a very strong simplification of the problem.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\section{Results}
+\label{sec:results}
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsection{Hardness of the RCP}
+\label{ssec:RCPhardness}
+
+\begin{theorem}
+    \label{thm:RCPhardness}
+    The RCP is NP-complete with a binary alphabet.
+\end{theorem}
+
+As the RCP is a variant of the MRCP, we have the following corollary.
+
+\begin{corollary}
+    \label{cor:MRCPhardness}
+    The MRCP is NP-complete with a binary alphabet.
+\end{corollary}
+
+The hardness proof considers a special case of the RCP, over a binary alphabet $\{A,B\}$ where every read maps to a unique position and for every variable position, exactly one $A$ can be assigned to an allele for this position. So for each column $c_i$ of the matrix $\cal S$, a pair $(A_i,B_i)$is given that describes for each symbol the number of reads mapping to this position with this symbol. So under the assumption that each variable position is covered by the same number of reads, we have that for any columns $c_i$ and $c_j$, $A_i+B_i = A_j+B_j$. 
+
+The hardness proof is based on a reduction from the Monotone Exactly 1-in-3 SAT Problem. This is variation of 3-SAT where no clause does contain a negation and in a solution, each clause has exactly one True variable. E.g. $(x_1+x_2+x_3) \dot (x_2+x_4+x_5) \dot (x_1+x_2+x_5)$ admits as a solution assigning True to $x_2$ and False to the four other variables.
+
+The reduction from Monotone Exactly 1-in-3 SAT to an RCP instance over the alphabet $\{A,B\}$ is as follows. Let $\phi$ be a monotone 3-CNF formula; denote by $\phi_1,\dots, \phi_q$ the $q$ clauses and by $x_1,\dots,x_p$ the $p$ boolean variables. We define a matrix $\cal S$ with $q$ columns $c_1,\dots,c_q$ and $p+1$ rows (strain types) $s_1,\dots,s_{p+1}$. For $i \in \{1,\dots,p\}$ we assign the the entry of $\cal S$ in column $c_j$ the symbol $A$ if the boolean variable $x_i$ appears in clause $\phi_j$ and the symbol $B$ otherwise. Row $s_{p+1}$ contain only the symbol $B$. For the monotone 3-CNF formula given above, we obtain the matrix
+$${\cal S} = 
+    \begin{array}{c||c|c|c||}
+        & c_1 & c_2 & c_3 \\ \hline
+    s_1 & A   & B   & A   \\ \hline
+    s_2 & A   & A   & A   \\ \hline
+    s_3 & A   & B   & B   \\ \hline
+    s_4 & B   & A   & B   \\ \hline
+    s_5 & B   & A   & A   \\ \hline
+    s_6 & B   & B   & B   \\ \hline
+%    s_7 & B   & B   & B   \\ \hline
+    \end{array}
+$$
+To complete the instance, for every column $c_j$, we assign the symbol abundances $A_j=1,\ B_j=q-1$. It follows from the fact that $A_j=1$ for every column $c_j$ and that every row but $s_{p+1}$ has at least one entry $A$ that if there is a solution to the RCP for this instance, then every ST in $\{s_1,\dots,s_p\}$ can be assigned at most one read per position, i.e. has abundance either $0$ or $1$. Giving abundance $1$ to ST $s_i$ implies that the corresponding variable is set at True; Due to $A_j=1$ for every $c_j$, no other allele with value $A$ at this position can be selected, which corresponds to forcing exactly one True variable per clause. Finally, the ST $S_{p+1}$ can be used with an arbitrary abundance to make sure that the observed frequencies $B_j$ are satisfied. This justifies the claim below.
+
+\begin{claim}
+    \label{claim:RCPhardness}
+    The initial monotone 3-CNF formula $\phi$ is satisfiable with exactly one True variable per clause if and only if the corresponding RCP instance admits a solution where the strain types $\{s_1,\dots,s_p\}$  have abundance $0$ or $1$.
+\end{claim}
+
+\begin{remark}
+    \label{rem:RCPhardness}
+    It would be interesting to see if this proof can be extended to the case of abundances that might be greater than $1$.
+\end{remark}
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsection{A Binary Integer Linear Program (ILP) Formulation for the MRCP and MRESP}
+\label{ssec:ILP1}
+
+\paragraph{Read mappings and spans.}
+We assume a given read $r_i$ might have several mappings, each with a different span. We denote these mappings $\{m_{i_1},\dots,m_{i_p}\}$. The span of mapping $m_{i_q}$ is defined by $0/1$ variables $p_{i_q,k}$ for $k\in \{1,\dots,|L|\}$, with a value $1$ iff the span of mapping $m_{i_q}$ contains position $k$. The total number of such variables is the summed sizes of the spans of all read mappings.
+
+\paragraph{Reads assignment.} To model the assignment of reads to STs, we introduce $0/1$ decision variables $X_{i_q,j}$, where a value $1$ indicates that mapping $m_{i_q}$ of read $r_i$ is assigned to ST $s_j$.
+
+To ensure that for every read at most one mapping is assigned to a ST (problem MRESP), we introduce the following constraint, for each read $r_i$:
+\begin{equation}
+    \label{eq:one_mapping_per_read}
+    \sum_{q,j} X_{i_q,j} \leq 1
+\end{equation}
+If we deal with the MRCP, we need to replace the inequality by an equality. We can also easily relax the constraint to use all reads in the MRCP, and so allows a proportion of reads to be unassigned.
+
+If we want to use the quality of the mapping (alignment score) of a read to a ST, we can introduce one variable for each pair (mapping,ST) giving a weight to the assignment of mapping $m_{i_q}$ to ST $s_j$, that we denote by $w_{i_q,j}$. 
+
+\paragraph{Uniform coverage.} We first define the coverage at position $k$ of ST $s_j$:
+$$cov_{j,k} = \sum_{i_q} X_{i_q,j} p_{i_q,j}$$
+where the sum is over all mappings for all reads. To model the hypothesis of uniform coverage up to a certain divergence, we can use a given parameter $\epsilon \in [0,1]$ and add the following constraints.
+
+\begin{eqnarray}
+    \label{eq:uniform_coverage}
+    avg\_cov_j & =   & \frac{1}{|L|} \sum_{k} cov_{j,k} \\
+    cov_{j,k}  &\geq & (1-\epsilon) avg\_cov_j\  \forall k \\
+    cov_{j,k}  &\leq & (1+\epsilon) avg\_cov_j\  \forall k
+\end{eqnarray}
+We could also consider some additional constraints for example to prevent a very low coverage.
+
+\paragraph{Chosen STs.} We might want to record which STs are chosen by our solution. To do so we introduce a $0/1$ decision variable $S_j$ per ST, with the constraint
+\begin{eqnarray}
+    \label{eq:ST}
+    S_j & \geq & X_{i_q,j}\ \ \forall i_q
+\end{eqnarray}
+
+\paragraph{Objective function.} The objective function for the MRESP is immediate:
+\begin{equation}
+    \label{eq:obj_MRESP}
+    \max \sum_{i_q,j} X_{i_q,j}
+\end{equation}
+The objective function for the MRCP is also immediate:
+\begin{equation}
+    \label{eq:obj_MRCP}
+    \min \sum_{i_q,j} w_{i_q,j}X_{i_q,j}
+\end{equation}
+
+Note that the idea of assigning every read to a ST is likely extreme, as several reads could have equivalent mappings and spans; it would be nice to explore alternative formulations where we collect such reads into a single cluster. However this would require to split this cluster potentially between several STs, which leads us to an alternative ILP we describe below.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsection{An alternative ILP Formulation for the MRESP}
+\label{ssec:ILP2}
+
+In the alternative formulation, we assume that each variable position is given a \textit{budget} which is the number or ratio of reads whose span includes the column. More precisely, for each symbol $a$ of the alphabet $\Sigma$ and each variable position $k$, we denote by $C_{a,k}$ the budget of this variable position for this symbol, obtained from the reads mappings; here we assume that each read has a unique mapping, and stronger actually, that the span of each read is of length $1$. 
+
+We want to assign to each ST a \textit{usage} quantity describing either the abundance (copy number, integer) or frequency (floating number) of this ST. We want again to maximize the sum of the usages of the STs. 
+
+For each position $k$ and St $s_j$ we define a variable $U_{j,k}$ that is the usage of ST $s_j$ at column $k$. Under the strict uniform coverage hypothesis, this implies constraints that for a given $j$ all $U_{j,k}$ should be equal. If we want to relax the uniform coverage hypothesis as above, we can introduce a parameter $\epsilon$ and have constraints that every $U_{j,k}$ is $\epsilon$-close to the average of these values.
+
+\begin{eqnarray}
+    \label{eq:uniform_coverage_alt}
+    avg\_cov_j & =   & \frac{1}{|L|} \sum_{k} U_{j,k} \\
+    U_{j,k}  &\geq & (1-\epsilon) avg\_cov_j\  \forall k \\
+    U_{j,k}  &\leq & (1+\epsilon) avg\_cov_j\  \forall k
+\end{eqnarray}
+Note that if $\epsilon=0$, this forces all $U_{j,k}$ for a given $j$ to have the same value.
+
+Next, we need to be consistent with the budget: if ST $s_j$ has nucleotide $a$ at position $k$:
+
+\begin{eqnarray}
+    \label{eq:budget2}
+    X_{j,k}  &\geq & C_{a,k}
+\end{eqnarray}
+
+The objective function for the MRESP is then immediate again
+\begin{equation}
+    \label{eq:obj_MRESP_alt}
+    \max \sum_{j,k} U_{j,k}
+\end{equation}
+
+Note that if we aim to find the frequency for each strain, then we need only to solve an LP, so the problem is tractable. If we aim to find abundances (i.e. integral copy numbers), then we need to go through a phase of rounding. 
+Question: is-there a simple rounding scheme providing an approximation to the MRESP? If we round below every $U_{j,k}$ then we get an additive approximation factor of $N\times L$.
+
+Note also that the ILP above makes sense if one assumes that each read maps uniquely and has span of length $1$. A solution then implicitly defines a reads assignment. If reads have longer spans, then our approach likely does not result into a simple way to assign reads to STs, an issue likely made more difficult to handle if we assume reads can have multiple mappings.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\bibliographystyle{abbrv}
+\bibliography{references}
+
+\end{document}
+

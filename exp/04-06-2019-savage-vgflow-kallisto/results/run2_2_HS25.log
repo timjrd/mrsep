@@ -1,0 +1,39 @@
+
+    ====================ART====================
+             ART_Illumina (2008-2016)          
+          Q Version 2.5.8 (June 7, 2016)       
+     Contact: Weichun Huang <whduke@gmail.com> 
+    -------------------------------------------
+
+                  Paired-end sequencing simulation
+
+Total CPU time used: 12.88
+
+The random seed for the run: 1559824219
+
+Parameters used during run
+	Read Length:	100
+	Genome masking 'N' cutoff frequency: 	1 in 100
+	Fold Coverage:            100X
+	Mean Fragment Length:     250
+	Standard Deviation:       10
+	Profile Type:             Combined
+	ID Tag:                   
+
+Quality Profile(s)
+	First Read:   HiSeq 2500 Length 126 R1 (built-in profile) 
+	First Read:   HiSeq 2500 Length 126 R2 (built-in profile) 
+
+Output files
+
+  FASTQ Sequence Files:
+	 the 1st reads: ../results/run2_2_HS25_1.fq
+	 the 2nd reads: ../results/run2_2_HS25_2.fq
+
+  ALN Alignment Files:
+	 the 1st reads: ../results/run2_2_HS25_1.aln
+	 the 2nd reads: ../results/run2_2_HS25_2.aln
+
+  SAM Alignment File:
+	../results/run2_2_HS25_.sam
+

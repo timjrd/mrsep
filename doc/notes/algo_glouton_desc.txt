@@ -1,0 +1,115 @@
+MRSEP Solver
+Méthode Gloutonne
+
+
+Soit CH[i] un tableau (alignements choisis pour la souche i).
+
+Soit CO[i] un tableau (couverture de la souche i) où chaque élément
+est initialisé à [0,0].
+
+Soit WS[i] le score de la souche i.
+
+Soit WR[i][j][k] le poid de l'alignement k de la lecture j pour la
+souche i.
+
+Soit T le poid minimal acceptable de WR (constante).
+
+Soit K le rang de couverture (constante).
+
+
+Pour chaque souche i :
+
+  --- on assigne un poid à chaque alignement ---
+
+  Pour chaque lecture j :
+
+    Pour chaque alignement k de la lecture j :
+
+      WR[i][j][k] prend la valeur "nombre de paires position-base de k
+      correspondants à la souche i" / "taille de k".
+
+  --- on calcule la couverture approchée ---
+
+  Soit Y un tableau où chaque élément est initialisé à [0,0].
+  
+  Pour chaque position p de la souche i :
+
+    Pour chaque lecture j :
+
+      Pour chaque alignement k de la lecture j :
+
+        Si k couvre la position p et que WR[i][j][k] >= T :
+
+	  Y[p] prend la valeur [p, Y[p][1] + 1].
+
+  --- on choisit un alignement pour chaque lecture ---
+
+  Trier Y sur Y[*][1] en ordre ascendant.
+
+  Pour chaque élément e de Y dans l'ordre :
+
+    Si Y[e][1] > 0 :
+
+      Pour chaque lecture j :
+
+	Choisir l'alignement k de la lecture j tel que WR[i][j][k]
+	soit le plus petit possible, tel que WR[i][j][k] >= T, et tel
+	que k couvre la position p ; si k existe :
+
+          CH[i][j] prend la valeur k.
+
+  --- on calcule la couverture avec les alignements choisis ---
+
+  Pour chaque position p de la souche i :
+
+    Pour chaque lecture j :
+
+      Si CH[i][j] existe et que CH[i][j] couvre la position p :
+
+        CO[i][p] prend la valeur [p, CO[i][p][1] + 1].
+
+  -- on calcule la couverture uniforme --
+
+  Trier CO[i] sur CO[i][*][1] en ordre ascendant.
+
+  Soit U la couverture uniforme, U prend la valeur CO[i][K][1]
+
+  -- on calcule le score de la souche i et on plafonne la couverture --
+
+  Soit w le score, w prend la valeur 0.
+
+  Pour chaque élément e de CO[i] :
+
+    Si CO[i][e][1] < U :
+
+      w prend la valeur w + CO[i][e][1].
+
+    Sinon :
+
+      CO[i][e][1] prend la valeur U
+
+      w prend la valeur w + U
+
+  WS[i] prend la valeur w.
+
+Sélectionner la souche avec le poid le plus fort (max(WS)) ; soit i
+cette souche.
+
+-- on assigne les lectures à la souche --
+
+Pour chaque élément e de CO[i] dans l'ordre :
+
+  Tant que CO[i][e][1] > 0 :
+
+    Choisir la lecture j tel que l'alignement (k = CH[i][j]) couvre la
+    position CO[i][e][0] et tel que WR[i][j][k] soit le plus petit
+    possible :
+
+      Consumer la lecture j (avec tout ses alignements). La lecture j
+      est assigné à la souche i avec l'alignement k.
+
+      Mettre à jour la couverture CO[i] (sans la lecture j).
+
+Consumer la souche i.
+
+Répéter toute l'opération (sans la souche i et les lectures assignés).

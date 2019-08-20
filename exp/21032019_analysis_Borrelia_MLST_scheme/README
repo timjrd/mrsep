@@ -1,0 +1,6 @@
+In this experiment, we do a quick statistical analysis of the MLST
+scheme for the Borrelia pathogen. We look at statistics on the
+different loci (genes), number of alleles per gene, ...
+
+Given the scope of the analysis, it is done through notebooks,
+i.e. does not reauire specific scripts/programs to be used.

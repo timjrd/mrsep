@@ -1,0 +1,37 @@
+20 juin 2019.
+
+Une idée d'algorithme glouton.
+
+ALGO SIMPLE.
+On se fixe une souche et on considère l'ensemble de tous les reads, et
+on cherche à assigner des reads à cette souche de manière à satisfaire
+les contraintes d'uniformité et en maximisant le poids des reads
+assignés.
+
+Cet algorithme peut alors être appliqué à chaque souche candidate et
+on choisit celle qui maximise la fonction objectif. Puis on retire les
+lectures assignées à cette souche et on recommence.
+
+On peut implémenter cette approche en utilisant l'ILP appliqué à
+chaque fois à une base de données limitée à une souche.
+
+PROBLEME: comment définir la notion de position variable?
+IDEE: utiliser les positions variables en termes des allèles déjà choisis.
+
+PROBLEME: comment choisir le premier allèle?
+
+ALGO PLUS COMPLIQUE.
+On peut penser à modifier le problème de choix glouton de la prochaine
+souche, en s'autorisant à transférer un des reads déjà assigné à une
+souche lors d'étapes précédentes à la nouvelle souche qu'on essaie de
+trouver. On peut contraindre cette liberté en forçant chaque position
+variable des souches déjà sélectionnées à rester dans l'intervalle de
+couverture donné par l'ensemble des lectures (i.e. on ne modifie pas
+la couverture moyenne des souches déjà sélectionnées.
+
+Question : peut-on mettre au point des algorithmes combinatoires
+(i.e. pas un ILP) permettant d'attaquer ce problème de choix glouton
+de la prochaine souche?
+
+Expériences : on veut travailler sur tous les loci d'un coup, et non
+pas allèle par allèle comme on le fait pour le moment.

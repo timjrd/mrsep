@@ -1,0 +1,33 @@
+This README describes the structure of every experiment directory.
+
+It is important to follow a few simple rules, in order to be able to
+understand and reproduce our experiments.
+
+Each subdirectory corresponds to a single experiment, done at a
+precise time. The name of each directory should contain the date it
+was created and indicate what the experiment is about.
+
+Within each experiment directory, we need to have the following
+subdirectories.
+
+- A subdirectory data contains the data specific to this experiment,
+  that are not located in the general data directory located at the
+  root of the github repo. For example, if we do an experiment on
+  simulated data, these simulated data should be in this directory. If
+  we reuse the same data (e.g. simulated data) in several experiments,
+  then we can use symbolic links toward the correspondign directories,
+  but this reauire we are very strict on the fact that the data have
+  not been modified sicne they were generated).
+
+- A subdirectory src contains the sources of the program we used for
+  the experiment that are not external programs that are already in
+  the directory src at the root of the github repo. This should in
+  particular contain the sources of our programs (i.e. the
+  programs/scripts we wrote) used in the experiment.
+
+- A subdirectory results should contain the results of the experiment.
+
+- A subdirectory doc should contain the notebooks describing precisely
+  the experiment and the analysis of the results of the experiment.
+
+

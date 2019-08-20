@@ -1,0 +1,3 @@
+python ../src/read_data.py ../../../data/Borrelia/MLST_19032019/ST.txt ../../../data/Borrelia/MLST_19032019 150 20 ../data/
+kallisto index -i data/ST150.idx data/ST150.fasta 
+cp ../../../data/Borrelia/MLST_19032019/ST.hamming ST150.hamming

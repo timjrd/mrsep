@@ -1,0 +1,15 @@
+Alleles. Each file XXXX.fasta contains th sequences of the alleles for
+the locus XXXX. There are 8 loci: clpA, clpX, nifS, pepX, pyrG, recG,
+rplB, uvrA. The alleles sequences were obtained from
+https://pubmlst.org/bigsdb?db=pubmlst_borrelia_seqdef&page=downloadAlleles
+
+Alignments.  We aligned the alleles of each locus using muscle and
+MAFFT. For locus XXXX,
+- the file XXXX_muscle.fasta (resp. XXXX_muscle.clw) contains the
+alignment of the alleles in FASTA format (resp. clustalw) using
+muscle, obtained from https://www.ebi.ac.uk/Tools/msa/muscle/ on March
+19, 2019 using the default options;
+- the file XXXX_mafft.fasta contains the alignment of the alleles in
+FASTA formatusing muscle, obtained from
+https://www.ebi.ac.uk/Tools/msa/mafft/ on March 19, 2019 using the
+default options.

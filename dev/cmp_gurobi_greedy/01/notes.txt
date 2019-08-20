@@ -1,0 +1,8 @@
+instance             sim/a010-r003
+noFilters            
+timeGurobi           120s
+timeGreedy           860s
+epsilon              0.25
+maxMismatches        2
+minReadMappingWeight 0.9
+coverageRank         8

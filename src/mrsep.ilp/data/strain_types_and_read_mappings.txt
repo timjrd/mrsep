@@ -1,0 +1,19 @@
+-ATCGAT
+-TACGAA
+-TAGCTA
+
+1 1 C 4 G 5 A 6
+2 1 A 2 T 3
+2 2 A 6 T 7
+3 1 C 4 G 5 A 6 T 7
+4 1 A 2
+4 2 A 6
+4 3 A 3
+4 4 A 7
+5 1 T 2 A 3
+5 2 T 6 A 7
+6 1 T 2 A 3
+6 2 T 6 A 7
+7 1 T 2 A 3
+7 2 T 6 A 7
+8 1 G 4 C 5
